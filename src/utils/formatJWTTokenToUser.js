@@ -4,10 +4,12 @@ export function formatJWTTokenToUser(token) {
       if (!decodedJwt) return null;
   
       const {
-        payload: { userId },
+        payload: { id },
       } = decodedJwt;
-  
-      return { userId };
+
+      
+      
+      return id ;
     } catch (error) {
       console.error("Failed to decode JWT token:", error);
       return null;

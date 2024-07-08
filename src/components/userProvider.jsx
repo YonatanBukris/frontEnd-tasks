@@ -1,46 +1,49 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { formatJWTTokenToUser } from "../utils/formatJWTTokenToUser";
-import axios from "axios";
 import api from "../services/api.service";
 import { useNavigate } from "react-router-dom";
 
 const UserContext = createContext(null);
 
 export const UserProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState(undefined); 
+  const navigate = useNavigate();
 
   // Get token and userId
   const token = localStorage.getItem("token");
-  const { userId } = token ? formatJWTTokenToUser(token) : {};
-  const navigate = useNavigate();
+  const  id  =  formatJWTTokenToUser(token);
+ 
 
   useEffect(() => {
-    if (!userId) {
+    if (!token) {
       return; // Skip fetching if there's no userId
     }
 
     const fetchUser = async () => {
       try {
-        const userInfo = await api.get(`/auth/login/${userId}`);
-        setUser(userInfo.data);
+        const userInfo = await api.get(`/auth/user/${id}`);
+        setUser(userInfo.data.user);
       } catch (error) {
         console.error("Failed to fetch user data", error);
+        if (error.response?.status === 401) {
+          // Token might be invalid or expired
+          logout();
+        }
       }
     };
 
     fetchUser();
-  }, [userId]);
+  }, [id, token]); // Add token to dependency array
 
   const login = (userInfo) => {
     setUser(userInfo);
-    navigate("./task");
+    navigate("/task");
   };
-
 
   const logout = () => {
     setUser(null);
     localStorage.removeItem("token");
-    navigate("../");
+    navigate("/");
   };
 
   return (
