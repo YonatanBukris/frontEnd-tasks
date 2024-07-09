@@ -12,6 +12,9 @@ import MainLayout from "./components/MainLayout";
 import AuthLayout from "./components/AuthLayout";
 import { useUserContext } from "./components/userProvider";
 import ProtectedRoute from "./components/ProtectedRoute";
+import { Toaster } from "./components/ui/toaster";
+import { Skeleton } from "./components/ui/skeleton";
+import ProfilePage from "./pages/ProfilePage";
 
 
 
@@ -29,6 +32,7 @@ function App() {
         >
           <Route index element={<HomePage />} />
           <Route path="about" element={<AboutPage/>} />
+          <Route path="profile" element={<ProfilePage/>} />
           <Route path="contact" element={<ContactPage />} />
           <Route path="task" element={< TasksPage />} />
           <Route path="task/:taskId" element={< TaskDetailsPage />} />
@@ -41,6 +45,8 @@ function App() {
 
         <Route path="*/" element={<NotFoundPage />} />
     </Routes>
+
+    <Toaster />
     </>
   );
 }

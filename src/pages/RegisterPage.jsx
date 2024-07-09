@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Link, useNavigate } from "react-router-dom";
-import { UserPlus } from "lucide-react";
+import { CircleFadingPlus, UserPlus } from "lucide-react";
 import api from "../services/api.service"; // Import your API service
 
 function RegisterPage() {
@@ -40,7 +40,7 @@ function RegisterPage() {
     <Card className="shadow-2xl">
       <CardHeader>
         <CardTitle className="flex justify-between items-center">
-          <span>Register</span> <UserPlus />
+          <span>Register</span> <CircleFadingPlus />
         </CardTitle>
       </CardHeader>
       <CardContent>

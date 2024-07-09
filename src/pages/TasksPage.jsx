@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../services/api.service';
+import { toast, useToast } from "@/components/ui/use-toast"
+import { Skeleton } from "@/components/ui/skeleton"
 import {
   Card,
   CardContent,
@@ -8,7 +10,18 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { CheckCircle, Pin, Trash2, Grid, List } from 'lucide-react'; // Assuming you have icons for Grid and List
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
+import { CheckCircle, Pin, Trash2, Grid, List, PinOff } from 'lucide-react'; // Assuming you have icons for Grid and List
 import { useUserContext } from '@/components/userProvider';
 import {
   Dialog,
@@ -22,6 +35,7 @@ import { Button } from '@/components/ui/button';
 
 
 function TasksPage() {
+
   const [tasks, setTasks] = useState([]);
   const [error, setError] = useState(null);
   const [hoveredTask, setHoveredTask] = useState(null); 
@@ -33,6 +47,8 @@ function TasksPage() {
     isPinned: false,
   });
   const [displayMode, setDisplayMode] = useState('grid'); // 'grid' or 'table'
+  const [loading, setLoading] = useState(true); 
+  const { toast } = useToast()
 
   const { user } = useUserContext();
 
@@ -43,6 +59,8 @@ function TasksPage() {
         setTasks(response.data);
       } catch (err) {
         setError(err.response ? err.response.data.message : err.message);
+      } finally {
+        setLoading(false); 
       }
     }
     getTasks();
@@ -68,6 +86,10 @@ function TasksPage() {
     try {
       await api.delete(`/tasks/${taskId}`);
       setTasks(tasks.filter(task => task._id !== taskId));
+      toast({
+        title: "Task Deleted",
+        description: "Task deleted successfully",
+      });
     } catch (err) {
       console.error("Failed to delete task:", err);
     }
@@ -85,6 +107,10 @@ function TasksPage() {
         todoList: [{ title: '', isComplete: false }],
         isPinned: false,
       });
+      toast({
+        title: "Task Added",
+        description: "Task added successfully",
+      });
     } catch (err) {
       console.error("Failed to create task:", err);
     }
@@ -100,8 +126,11 @@ function TasksPage() {
   const toggleDisplayMode = () => {
     setDisplayMode(currentMode => currentMode === 'grid' ? 'table' : 'grid');
   };
-
+  
   return (
+    
+    
+    
     <div className="container mx-auto p-4 space-y-8">
       <div className='flex justify-between items-center'>
         <h1 className="text-3xl font-bold mb-4">Tasks</h1>
@@ -110,6 +139,8 @@ function TasksPage() {
           <button onClick={toggleDisplayMode} className="p-2 rounded-md mr-4">
             {displayMode === 'grid' ? <List size={24} /> : <Grid size={24} />}
           </button>
+         
+       
           <Dialog>
             <DialogTrigger><Button className="p-2 rounded-md">Create New Task</Button></DialogTrigger>
             <DialogContent>
@@ -197,13 +228,23 @@ function TasksPage() {
         </div>
       </div>
       
+
+      {loading ? (
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {Array(6).fill().map((_, index) => (
+          <Skeleton key={index} className="w-full h-60" />
+        ))}
+      </div>
+    ) : (
+      <>
       {displayMode === 'grid' && pinnedTasks.length > 0 && (
         <div className="mb-8">
           <h2 className="text-xl font-bold mb-2">Important</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {pinnedTasks.map(task => (
               <Link key={task._id} to={`/task/${task._id}`}>
-                <Card className={`border border-gray-300 shadow-md h-60 cursor-pointer relative ${areAllTodosComplete(task) ? 'bg-green-800' : ''}`}
+              <Card
+                  className={`border border-gray-300 shadow-md h-60 cursor-pointer relative ${areAllTodosComplete(task) ? 'bg-green-800' : ''}`}
                   onMouseEnter={() => setHoveredTask(task._id)}
                   onMouseLeave={() => setHoveredTask(null)}
                 >
@@ -212,11 +253,13 @@ function TasksPage() {
                       <span>{task.title}</span>
                       <button
                         onClick={(e) => {
+                          e.preventDefault();
                           e.stopPropagation(); 
                           togglePin(task._id);
                         }}
+                        className={`absolute top-2 left-2  mr-1  md:${hoveredTask === task._id ? 'block' : 'hidden'} `}
                       >
-                        <Pin className="w-4 h-4 mr-4" />
+                        <PinOff className="w-5 h-4" />
                       </button>
                     </CardTitle>
                   </CardHeader>
@@ -227,22 +270,22 @@ function TasksPage() {
                   <CardFooter>
                     {/* Additional footer content if needed */}
                   </CardFooter>
-                  {hoveredTask === task._id && (
-                    <button
-                      className="absolute bottom-4 right-4 text-red-500"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        deleteTask(task._id);
-                      }}
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                  )}
-                  {areAllTodosComplete(task) && (
+                  <button
+                   className={`absolute bottom-2 right-2 text-red-500   md:${hoveredTask === task._id ? 'block' : 'hidden'} `}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      deleteTask(task._id);
+                    }}
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                   {areAllTodosComplete(task) && (
                     <CheckCircle className="absolute top-2 right-2 w-6 h-6 text-green-500 animate-fade-in" />
                   )}
                 </Card>
-              </Link>
+            </Link>
+            
             ))}
           </div>
         </div>
@@ -262,38 +305,37 @@ function TasksPage() {
                   <CardHeader>
                     <CardTitle className="flex justify-between items-center">
                       <span>{task.title}</span>
-                      {hoveredTask === task._id && (
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation(); 
-                            togglePin(task._id);
-                          }}
-                        >
-                          <Pin className="w-4 h-4 mr-4" />
-                        </button>
-                      )}
+                      <button
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation(); 
+                          togglePin(task._id);
+                        }}
+                        className={`absolute top-2 left-2  mr-1  md:${hoveredTask === task._id ? 'block' : 'hidden'} `}
+                      >
+                        <PinOff className="w-5 h-4" />
+                      </button>
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <p className="mb-2">{task.description}</p>
+                    <p className="mb-2 z-50">{task.description}</p>
                     <p className="mb-4">{task.body}</p>
                   </CardContent>
                   <CardFooter>
                     {/* Additional footer content if needed */}
                   </CardFooter>
-                  {hoveredTask === task._id && (
-                    <button
-                      className="absolute bottom-4 right-4 text-red-500"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        deleteTask(task._id);
-                      }}
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                  )}
+                  <button
+                   className={`absolute bottom-2 right-2 text-red-500   md:${hoveredTask === task._id ? 'block' : 'hidden'} `}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      deleteTask(task._id);
+                    }}
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
                    {areAllTodosComplete(task) && (
-                    <CheckCircle className="absolute top-2 right-2 w-6 h-6 text-green-500 animate-fade-in" />
+                    <CheckCircle className="absolute top-2 right-2 w-6 h-6 text-green-500 animate-fade-in " />
                   )}
                 </Card>
               </Link>
@@ -305,21 +347,23 @@ function TasksPage() {
       {displayMode === 'table' && (
         <div className='space-y-12'>
           <h2 className="text-xl font-bold mb-2">All Tasks (Table View)</h2>
-          <table className="table-auto w-full ">
-            <thead >
-              <tr className='bg-white/10'>
-                <th >Title</th>
-                <th>Description</th>
-                <th>Body</th>
+          <table className="table-auto w-full border-collapse">
+            <thead>
+              <tr className=''>
+                <th className='border px-4 py-2'>Title</th>
+                <th className='border px-4 py-2'>Description</th>
+                <th className='border px-4 py-2'>Body</th>
                 {/* Add more headers as needed */}
               </tr>
             </thead>
             <tbody className='text-center'>
               {tasks.map(task => (
-                <tr key={task._id} className=''>
-                  <td>{task.title}</td>
-                  <td>{task.description}</td>
-                  <td>{task.body}</td>
+                <tr key={task._id} className={`${areAllTodosComplete(task) ? 'bg-green-800' : ''} `}>
+                  <td className='border px-4 py-2 '>
+                    {task.title}
+                  </td>
+                  <td className='border px-4 py-2'>{task.description}</td>
+                  <td className='border px-4 py-2'>{task.body}</td>
                   {/* Add more table cells for additional task details */}
                 </tr>
               ))}
@@ -327,6 +371,8 @@ function TasksPage() {
           </table>
         </div>
       )}
+        </>
+    )}
 
       {tasks.length === 0 && <p>No tasks available.</p>}
     </div>

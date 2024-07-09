@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Link, useNavigate } from "react-router-dom"; // Import useNavigate
-import { LogIn } from "lucide-react";
+import { LogIn, Origami, SendHorizontal } from "lucide-react";
 import { useUserContext } from "../components/userProvider";
 import api from "../services/api.service";
 
@@ -34,46 +34,48 @@ function LoginPage() {
   };
 
   return (
-    <Card className="shadow-2xl">
-      <CardHeader>
-        <CardTitle className="flex justify-between items-center">
-          <span>Login</span> <LogIn />
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
-        <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
-          <div>
-            <Label>Email:</Label>
-            <Input
-              name="email"
-              type="email"
-              placeholder="Enter email..."
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-            />
-          </div>
-          <div>
-            <Label>Password:</Label>
-            <Input
-              name="password"
-              type="password"
-              placeholder="Enter password..."
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-            />
-          </div>
-          <Button type="submit">Login</Button>
-        </form>
-      </CardContent>
-      <CardFooter>
-        <p className="text-xs">
-          Don't have an account?{" "}
-          <Link className="underline font-bold" to="/auth/register">
-            Register
-          </Link>
-        </p>
-      </CardFooter>
-    </Card>
+    <Card className="max-w-md mx-auto p-8 shadow-lg rounded-lg">
+  <CardHeader className="mb-6">
+    <CardTitle className="flex justify-between items-center text-2xl font-semibold">
+      <span>Login</span> <SendHorizontal />
+    </CardTitle>
+  </CardHeader>
+  <CardContent>
+    <form className="flex flex-col gap-6" onSubmit={handleSubmit}>
+      <div className="flex flex-col gap-2">
+        <Label className="text-lg font-medium">Email:</Label>
+        <Input
+          name="email"
+          type="email"
+          placeholder="Enter email..."
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          className="p-3 border rounded-md"
+        />
+      </div>
+      <div className="flex flex-col gap-2">
+        <Label className="text-lg font-medium">Password:</Label>
+        <Input
+          name="password"
+          type="password"
+          placeholder="Enter password..."
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          className="p-3 border rounded-md"
+        />
+      </div>
+      <Button type="submit" className="py-3 mt-4 rounded-md">Login</Button>
+    </form>
+  </CardContent>
+  <CardFooter className="mt-6 text-center">
+    <p className="text-sm">
+      Don't have an account?{" "}
+      <Link className="underline font-semibold" to="/auth/register">
+        Register
+      </Link>
+    </p>
+  </CardFooter>
+</Card>
   );
 }
 
